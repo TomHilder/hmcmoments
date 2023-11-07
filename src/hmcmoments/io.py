@@ -6,11 +6,12 @@ Utility functions for io and CLI.
 """
 
 import argparse
+import glob
 
 from .settings import Settings
 
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser:
     # Instantiate the parser
     parser = argparse.ArgumentParser(
         description="Generate moment maps and corresponding posteriors by performing inference on line profiles with Hamiltonian Monte Carlo.",
@@ -38,7 +39,7 @@ def get_parser():
         type=int,
         help="downsample cube using block means, where the block size is n_pix by n_pix",
         metavar="n_pix",
-        choices=range(2, 11),
+        choices=range(2, 17),
         default=Settings.DEFAULT_DOWNSAMPLE,
     )
     # Optional argument to choose the number of cores
@@ -60,3 +61,13 @@ def get_parser():
     )
     # Return parser
     return parser
+
+# Function to check whether previous results with the same settings exist in cwd
+def previous_results_exist(settings: Settings) -> None:
+    if settings.overwrite:
+        pass
+    else:
+        if len(glob.glob(settings.output_fname_base)) > 0:
+            raise Exception("Results with the chosen settings already exist in the current working directory. Run with --overwrite in CLI or overwrite=True to run anyway and overwrite them.")
+        else:
+            pass
