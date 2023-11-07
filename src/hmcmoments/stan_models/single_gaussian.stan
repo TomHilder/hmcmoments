@@ -17,7 +17,7 @@ parameters {
 }
 model {
     y ~ normal(
-        a * exp(-square((x - b) / c)),
+        a * exp(-0.5 * square((x - b) / c)),
         u_y
     );
 }

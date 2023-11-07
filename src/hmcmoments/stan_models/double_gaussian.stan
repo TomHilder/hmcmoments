@@ -18,7 +18,7 @@ parameters {
 model {
     b ~ uniform(b_lower, b_upper);
     y ~ normal(
-        a[1] * exp(-square((x - b[1]) / c[1])) + a[2] * exp(-square((x - b[2]) / c[2])),
+        a[1] * exp(-0.5 * square((x - b[1]) / c[1])) + a[2] * exp(-0.5 * square((x - b[2]) / c[2])),
         u_y
     );
 }
