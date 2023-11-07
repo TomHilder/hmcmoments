@@ -1,0 +1,51 @@
+# pyproject.toml
+
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hmcmoments"
+version = "0.0.1"
+description = "Create moment maps of line emission data with Hamiltonian Monte Carlo"
+readme = "README.md"
+authors = [{ name = "Thomas Hilder", email = "Thomas.Hilder@monash.edu" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization"
+]
+keywords = ["astronomy", "astrophysics", "research", "protoplanets", "exoplanets", "statistics", "protoplanetary", "discs", "discs"]
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "bettermoments",
+]
+requires-python = ">=3.7"
+
+[project.optional-dependencies]
+dev = ["black", "bumpver", "isort", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/TomHilder/hmcmoments"
+
+[project.scripts]
+hmcmoments = "hmcmoments.__main__:main"
+
+[tool.bumpver]
+current_version = "0.0.1"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message  = "Bump version {old_version} -> {new_version}"
+commit          = true
+tag             = true
+push            = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"src/hmcmoments/__init__.py" = ["{version}"]
+"README.md" = ["{version}"]
