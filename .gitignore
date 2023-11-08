@@ -9,7 +9,7 @@
 .vscode/*
 
 # Stan files
-.hpp
+*.hpp
 
 # Notebooks extras
 /.ipynb_checkpoints
