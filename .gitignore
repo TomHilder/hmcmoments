@@ -8,8 +8,10 @@
 # vs code config
 .vscode/*
 
-# Stan files
+# Compiled stan files
 *.hpp
+src/hmcmoments/stan_models/*
+!src/hmcmoments/stan_models/*.stan
 
 # Notebooks extras
 /.ipynb_checkpoints
