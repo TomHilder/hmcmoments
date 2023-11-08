@@ -5,14 +5,13 @@
 TODO: Add description
 """
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 from .image import downsample_cube, estimate_rms, trim_cube
 from .io import previous_results_exist, read_cube
 from .mcmc import do_mcmc
 from .settings import Settings
-
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 def generate(settings: Settings) -> None:

@@ -50,10 +50,10 @@ def format_data(line: NDArray, v_axis: NDArray, rms: float) -> dict:
         x=v_axis,
         y=line,
         u_y=np.repeat(rms, n_points),
-        a_lower=5*rms,
-        a_upper=1.5*line.max(),
+        a_lower=5 * rms,
+        a_upper=1.5 * line.max(),
         b_lower=v_axis.min(),
         b_upper=v_axis.max(),
         c_lower=v_spacing,
-        c_upper=0.1*v_range,
+        c_upper=0.1 * v_range,
     )
