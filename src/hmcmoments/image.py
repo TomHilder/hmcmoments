@@ -11,7 +11,6 @@ from skimage.measure import block_reduce
 
 from .settings import Settings
 
-
 # Function for downsampling
 DS_FUNC = np.mean
 

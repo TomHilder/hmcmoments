@@ -24,13 +24,16 @@ keywords = ["astronomy", "astrophysics", "research", "protoplanets", "exoplanets
 dependencies = [
     "numpy",
     "matplotlib",
-    "bettermoments",
-    "cmdstanpy"
+    "cmdstanpy",
+    "scikit-image",
+    "scipy",
+    "astropy",
+    
 ]
 requires-python = ">=3.7"
 
 [project.optional-dependencies]
-dev = ["black", "bumpver", "isort", "pytest"]
+dev = ["black", "bumpver", "isort", "pytest", "mypy"]
 
 [project.urls]
 Homepage = "https://github.com/TomHilder/hmcmoments"
