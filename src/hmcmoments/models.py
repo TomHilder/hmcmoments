@@ -12,6 +12,7 @@ from cmdstanpy import CmdStanModel
 from numpy.typing import NDArray
 from pkg_resources import resource_filename
 
+
 # List containing valid model names (maps int -> model)
 MODEL_NAMES = [
     "gaussian",
