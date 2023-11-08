@@ -8,6 +8,9 @@
 # vs code config
 .vscode/*
 
+# Stan files
+.hpp
+
 # Notebooks extras
 /.ipynb_checkpoints
 

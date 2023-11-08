@@ -10,6 +10,7 @@ import glob
 from pathlib import Path
 
 import numpy as np
+import scipy.constants as const
 from astropy.io import fits
 from numpy.typing import NDArray
 
@@ -83,15 +84,17 @@ def previous_results_exist(settings: Settings) -> None:
 
 
 # Function to read in data from cube
-def read_cube(file: Path) -> tuple[NDArray, NDArray, NDArray]:
+def read_cube(file: Path) -> tuple[NDArray, NDArray, NDArray, NDArray]:
     # Open file with astropy
     with fits.open(name=file) as hdu_list:
         # Get image
         image = hdu_list[0].data
         # Get get axes in sky coordinates
         x_axis, y_axis = sky_coordinates(hdu_list[0].header)
+        # Get velocity axis
+        v_axis = velocity_axis(hdu_list[0].header)
     # Return image and axes
-    return x_axis, y_axis, image
+    return v_axis, x_axis, y_axis, image
 
 
 # Function to get sky coordinates from fits header
@@ -107,3 +110,42 @@ def sky_coordinates(header: fits.header) -> tuple[NDArray, NDArray]:
     y_axis = (np.arange(1, ny + 1) - cy) * pix_scale
     # Return coordinates
     return x_axis, y_axis
+
+
+# Function to get velocity axis from fits header
+def velocity_axis(header: fits.header) -> NDArray:
+    """Adapted from bettermoments by Richard Teague: github.com/richteague/bettermoments"""
+
+    def read_spectral_axis(header: fits.header) -> NDArray:
+        # Number of pixels in spectral dimension
+        ns = header["NAXIS3"]
+        # Centre pixel in spectral dimension
+        cs = header["CRPIX3"]
+        # Assemble coordinate array in pixels
+        s_ax_pix = np.arange(1, ns + 1, dtype=float) - cs
+        # Convert to either Hz or m/s, with explicit type annotation for mypy
+        s_ax: NDArray = header["CRVAL3"] + s_ax_pix * header["CDELT3"]
+        return s_ax
+
+    def read_rest_frequency(header: fits.header) -> float:
+        # Have to try multiple header names
+        try:
+            nu = header["RESTFREQ"]
+        except KeyError:
+            try:
+                nu = header["RESTFRQ"]
+            except KeyError:
+                nu = header["CRVAL3"]
+        return float(nu)
+
+    # If unit of spectral axis is frequency
+    if "freq" in header["CTYPE3"].lower():
+        # Read frequencies and rest frequency
+        spec_ax = read_spectral_axis(header)
+        nu = read_rest_frequency(header)
+        # Convert to velocities, with explicit type annotation for mypy
+        v_ax: NDArray = (nu - spec_ax) * const.c / nu
+        return v_ax
+    # If unit is a velocity
+    else:
+        return read_spectral_axis(header)
