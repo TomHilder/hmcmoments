@@ -50,7 +50,7 @@ def trim_cube(
     # Calculate threshold for inclusion using median from each
     threshold = 1.5 * np.median(np.concatenate([peak_intensity_x, peak_intensity_y]))
     # Get indicies to make cuts (enforce square image by using same in each dimension)
-    i_min = np.argmin(peak_intensity_x < threshold) - 50
+    i_min = np.argmin(peak_intensity_x < threshold) - 1
     i_max = image.shape[1] - i_min
     # Return trimmed results
     return (

@@ -7,9 +7,10 @@ TODO: Add description.
 
 from pathlib import Path
 
+import numpy as np
 from cmdstanpy import CmdStanModel
-from pkg_resources import resource_filename
 from numpy.typing import NDArray
+from pkg_resources import resource_filename
 
 # List containing valid model names (maps int -> model)
 MODEL_NAMES = [
@@ -37,5 +38,22 @@ def get_model(model_number: int) -> CmdStanModel:
 
 
 # Assemble data into format required by model
-def get_data(image: NDArray, v_axis: NDArray):
-    pass
+def format_data(line: NDArray, v_axis: NDArray, rms: float) -> dict:
+    # Number of data points
+    n_points = len(line)
+    # Get channel spacing
+    v_spacing = np.diff(v_axis).mean()
+    # Get velocity range
+    v_range = v_axis.max() - v_axis.min()
+    return dict(
+        N=n_points,
+        x=v_axis,
+        y=line,
+        u_y=np.repeat(rms, n_points),
+        a_lower=5*rms,
+        a_upper=1.5*line.max(),
+        b_lower=v_axis.min(),
+        b_upper=v_axis.max(),
+        c_lower=v_spacing,
+        c_upper=0.1*v_range,
+    )

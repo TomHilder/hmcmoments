@@ -11,6 +11,10 @@ from .mcmc import do_mcmc
 from .settings import Settings
 
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+
 def generate(settings: Settings) -> None:
     # Check if previous results exist
     previous_results_exist(settings)
@@ -18,12 +22,12 @@ def generate(settings: Settings) -> None:
     v_axis, x_axis, y_axis, image = read_cube(settings.file)
     # Trim image to region where the disc is
     x_axis, y_axis, image = trim_cube(x_axis, y_axis, image)
+    plt.imshow(np.nanmax(image, axis=0), origin="lower")
+    plt.show()
     # Downsample image
     if settings.downsample > 1:
         x_axis, y_axis, image = downsample_cube(
             x_axis, y_axis, image, block_size=settings.downsample
         )
-    # Estimate noise
-    rms = estimate_rms(image, settings)
     # Do MCMC
-    results = do_mcmc(image, settings)
+    results = do_mcmc(image, v_axis, settings)
