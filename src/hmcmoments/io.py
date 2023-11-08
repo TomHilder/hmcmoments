@@ -7,10 +7,16 @@ Utility functions for io and CLI.
 
 import argparse
 import glob
+from pathlib import Path
+
+import numpy as np
+from astropy.io import fits
+from numpy.typing import NDArray
 
 from .settings import Settings
 
 
+# Function to generate parser for CLI
 def get_parser() -> argparse.ArgumentParser:
     # Instantiate the parser
     parser = argparse.ArgumentParser(
@@ -39,7 +45,7 @@ def get_parser() -> argparse.ArgumentParser:
         type=int,
         help="downsample cube using block means, where the block size is n_pix by n_pix",
         metavar="n_pix",
-        choices=range(2, 17),
+        choices=range(2, 32 + 1),
         default=Settings.DEFAULT_DOWNSAMPLE,
     )
     # Optional argument to choose the number of cores
@@ -62,12 +68,42 @@ def get_parser() -> argparse.ArgumentParser:
     # Return parser
     return parser
 
+
 # Function to check whether previous results with the same settings exist in cwd
 def previous_results_exist(settings: Settings) -> None:
     if settings.overwrite:
         pass
     else:
         if len(glob.glob(settings.output_fname_base)) > 0:
-            raise Exception("Results with the chosen settings already exist in the current working directory. Run with --overwrite in CLI or overwrite=True to run anyway and overwrite them.")
+            raise Exception(
+                "Results with the chosen settings already exist in the current working directory. Run with --overwrite in CLI or overwrite=True to run anyway and overwrite them."
+            )
         else:
             pass
+
+
+# Function to read in data from cube
+def read_cube(file: Path) -> tuple[NDArray, NDArray, NDArray]:
+    # Open file with astropy
+    with fits.open(name=file) as hdu_list:
+        # Get image
+        image = hdu_list[0].data
+        # Get get axes in sky coordinates
+        x_axis, y_axis = sky_coordinates(hdu_list[0].header)
+    # Return image and axes
+    return x_axis, y_axis, image
+
+
+# Function to get sky coordinates from fits header
+def sky_coordinates(header: fits.header) -> tuple[NDArray, NDArray]:
+    # Number of pixels in each dimension
+    nx, ny = header["NAXIS1"], header["NAXIS2"]
+    # Centre pixels in each dimension
+    cx, cy = header["CRPIX1"], header["CRPIX2"]
+    # Get pixelscale in arcseconds per pixel
+    pix_scale = header["CDELT2"] * 3600
+    # Assemble coordinate arrays
+    x_axis = (np.arange(1, nx + 1) - cx) * pix_scale * -1
+    y_axis = (np.arange(1, ny + 1) - cy) * pix_scale
+    # Return coordinates
+    return x_axis, y_axis

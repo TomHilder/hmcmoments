@@ -5,9 +5,9 @@
 Command line interface for hmcmoments.
 """
 
+from .generate import generate
 from .io import get_parser
 from .settings import Settings
-from .generate import generate
 
 
 def main() -> None:
