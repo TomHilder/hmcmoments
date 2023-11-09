@@ -5,7 +5,6 @@
 TODO: Add description
 """
 
-import numpy as np
 from numpy.typing import NDArray
 
 

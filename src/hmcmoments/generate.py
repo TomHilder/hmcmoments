@@ -6,7 +6,6 @@ TODO: Add description
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
 from numpy.typing import NDArray
 
 from .format import format_moments
@@ -29,9 +28,9 @@ def generate_moments(settings: Settings) -> tuple[NDArray, NDArray, NDArray, NDA
             x_axis, y_axis, image, block_size=settings.downsample
         )
     # Preview data for user
-    plt.title("Preview of data for inference (peak intensity)")
-    plt.imshow(np.nanmax(image, axis=0), origin="lower")
-    plt.show()
+    # plt.title("Preview of data for inference (peak intensity)")
+    # plt.imshow(np.nanmax(image, axis=0), origin="lower")
+    # plt.show()
     # Do MCMC on all line profiles in downsampled image
     summary_statistics = do_mcmc_image(image, v_axis, settings)
     # Format results into moment maps and uncertainties

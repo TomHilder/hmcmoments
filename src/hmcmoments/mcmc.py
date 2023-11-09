@@ -9,7 +9,6 @@ import logging
 import multiprocessing
 from functools import partial
 
-import matplotlib.pyplot as plt
 import numpy as np
 from cmdstanpy import CmdStanModel
 from numpy.typing import NDArray
