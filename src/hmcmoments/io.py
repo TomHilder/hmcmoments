@@ -75,7 +75,7 @@ def previous_results_exist(settings: Settings) -> None:
     if settings.overwrite:
         pass
     else:
-        if len(glob.glob(settings.output_fname_base)) > 0:
+        if len(glob.glob(f"*{settings.output_fname_base}*")) > 0:
             raise Exception(
                 "Results with the chosen settings already exist in the current working directory. Run with --overwrite in CLI or overwrite=True to run anyway and overwrite them."
             )
