@@ -16,7 +16,7 @@ from .models import MODEL_NAMES
 
 @dataclass(frozen=True)
 class Settings:
-    # Default values for settings
+    # Default values
     DEFAULT_MODEL = 1
     DEFAULT_DOWNSAMPLE = 1
     DEFAULT_CORES = cpu_count()

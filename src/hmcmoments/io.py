@@ -149,3 +149,12 @@ def velocity_axis(header: fits.header) -> NDArray:
     # If unit is a velocity
     else:
         return read_spectral_axis(header)
+
+
+def write_moments(
+    moments: tuple[NDArray, NDArray, NDArray, NDArray], settings: Settings
+) -> None:
+    # TODO: Write individuals moments as fits files instead of whole results
+    # as one .npz format
+    v, x, y, stats = moments
+    np.savez(f"summary_{settings.output_fname_base}", v=v, x=x, y=y, stats=stats)

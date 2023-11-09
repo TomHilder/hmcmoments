@@ -5,8 +5,8 @@
 Command line interface for hmcmoments.
 """
 
-from .generate import generate
-from .io import get_parser
+from .generate import generate_moments
+from .io import get_parser, write_moments
 from .settings import Settings
 
 
@@ -17,7 +17,9 @@ def main() -> None:
     # Get settings object
     user_settings = Settings.from_dict(**vars(args))
     # Call moments generation function with settings
-    generate(settings=user_settings)
+    moments = generate_moments(user_settings)
+    # Write moments to files
+    write_moments(moments, user_settings)
 
 
 if __name__ == "__main__":
