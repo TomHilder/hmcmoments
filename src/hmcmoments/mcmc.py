@@ -7,6 +7,7 @@ Perform Hamiltonian Monte Carlo inference on every line profile in a cube using 
 
 import logging
 import multiprocessing
+import tempfile
 from functools import partial
 
 import numpy as np
@@ -72,7 +73,7 @@ def do_mcmc_image(image: NDArray, v_axis: NDArray, settings: Settings) -> NDArra
         with multiprocessing.get_context("spawn").Pool(processes=n_processes) as pool:
             # Convenience generator expression to get line profile for pixel_ij
             line_generator = (
-                (image[:, i, j], f"{i}{j}") for j in range(image.shape[2])
+                (image[:, i, j], f"{i+1}{j+1}") for j in range(image.shape[2])
             )
             # Get results for all pixel line profiles in row
             summary_statistics[i, :, :, :] = pool.map(
@@ -105,20 +106,22 @@ def do_mcmc_line(
     # Get sampler configuration kwargs from global settings
     kwargs_sampler = HMCSamplingConfig.get_sampler_kwargs()
     # Perform sampling
-    try:
-        fit = model.sample(
-            data=data,
-            inits=initialisation,
-            chain_ids=chain_ids,
-            **kwargs_sampler,
-        )
-        # Return only the summary statistics from the fit
-        return np.array(fit.summary())
-    # If the pixel does not contain a peak compatible with the lower bound on the height
-    # of the Gaussian, the sampler will return a RuntimeError. We interpret this as a lack
-    # of a detection in this pixel and simply return zeros in the same format as the summary.
-    except RuntimeError:
-        return np.zeros((4, 9))
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        try:
+            fit = model.sample(
+                data=data,
+                inits=initialisation,
+                chain_ids=chain_ids,
+                output_dir=tmpdirname,
+                **kwargs_sampler,
+            )
+            # Return only the summary statistics from the fit
+            return np.array(fit.summary())
+        # If the pixel does not contain a peak compatible with the lower bound on the height
+        # of the Gaussian, the sampler will return a RuntimeError. We interpret this as a lack
+        # of a detection in this pixel and simply return zeros in the same format as the summary.
+        except RuntimeError:
+            return np.zeros((4, 9))
 
 
 def silent_logging_cmdstanpy():
