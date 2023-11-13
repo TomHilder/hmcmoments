@@ -20,7 +20,7 @@ from .settings import Settings
 
 
 class HMCSamplingConfig:
-    """Class to keep track of global settings we provide to the CmdStanModel.sample method.
+    """Keep track of global settings we provide to the CmdStanModel.sample method.
 
     This is a class instead of a dataclass because it is not intended to change between runs
     in most cases, and so it is not intended to be instantiated.
@@ -40,7 +40,7 @@ class HMCSamplingConfig:
     REFRESH: int = 1000
 
     @classmethod
-    def get_sampler_kwargs(cls):
+    def get_sampler_kwargs(cls) -> dict:
         return dict(
             chains=cls.N_CHAINS,
             parallel_chains=cls.N_CHAINS,
@@ -71,7 +71,9 @@ def do_mcmc_image(image: NDArray, v_axis: NDArray, settings: Settings) -> NDArra
         n_processes = settings.cores // HMCSamplingConfig.N_CHAINS
         with multiprocessing.get_context("spawn").Pool(processes=n_processes) as pool:
             # Convenience generator expression to get line profile for pixel_ij
-            line_generator = (image[:, i, j] for j in range(image.shape[2]))
+            line_generator = (
+                (image[:, i, j], f"{i}{j}") for j in range(image.shape[2])
+            )
             # Get results for all pixel line profiles in row
             summary_statistics[i, :, :, :] = pool.map(
                 do_mcmc_line_partial, line_generator
@@ -86,8 +88,14 @@ def do_mcmc_image(image: NDArray, v_axis: NDArray, settings: Settings) -> NDArra
 
 
 def do_mcmc_line(
-    line: NDArray, v_axis: NDArray, rms: float, model: CmdStanModel
+    line_and_id: tuple[NDArray, str], v_axis: NDArray, rms: float, model: CmdStanModel
 ) -> NDArray:
+    # Chain ID from first arg. Chain ID is just pixel index ij
+    chain_id = line_and_id[1]
+    # Line data from first arg
+    line = line_and_id[0]
+    # Unique ID for each chain
+    chain_ids = [int(f"{chain_id}{i}") for i in range(HMCSamplingConfig.N_CHAINS)]
     # Disable deluge of logging that occurs when running many models
     silent_logging_cmdstanpy()
     # Get data in form needed to run Stan model (including setting parameter bounds)
@@ -98,7 +106,12 @@ def do_mcmc_line(
     kwargs_sampler = HMCSamplingConfig.get_sampler_kwargs()
     # Perform sampling
     try:
-        fit = model.sample(data=data, inits=initialisation, **kwargs_sampler)
+        fit = model.sample(
+            data=data,
+            inits=initialisation,
+            chain_ids=chain_ids,
+            **kwargs_sampler,
+        )
         # Return only the summary statistics from the fit
         return np.array(fit.summary())
     # If the pixel does not contain a peak compatible with the lower bound on the height
