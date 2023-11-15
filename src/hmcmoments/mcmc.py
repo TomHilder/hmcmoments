@@ -60,13 +60,16 @@ def do_mcmc_image(image: NDArray, v_axis: NDArray, settings: Settings) -> NDArra
     model = get_model(settings.model)
     # An estimate of the rms in the image will be used as the uncertainty
     rms = estimate_rms(image, settings)
-    # Initialise an array of shape (n_x_pixels, n_y_pixels, n_params+1, n_statistics) to mcmc results
-    summary_statistics = np.zeros((*image.shape[1:], 4, 9))
+    # Get number of model parameters
+    n_dim_params = 3 * settings.model
+    # Initialise an array of shape (n_x_pixels, n_y_pixels, n_dim_params+1, n_statistics) to mcmc results
+    summary_statistics = np.zeros((*image.shape[1:], n_dim_params + 1, 9))
     # Iterate over the rows of the image sequentially
     for i in tqdm(range(image.shape[1])):
         # Reduce do_mcmc_line to single argument function for pool.map since other arguments are constant for fixed i
         do_mcmc_line_partial = partial(
-            do_mcmc_line, **dict(v_axis=v_axis, rms=rms, model=model)
+            do_mcmc_line,
+            **dict(v_axis=v_axis, rms=rms, model=model, n_dim_params=n_dim_params),
         )
         # Parallelise the mcmc over pixels in the chosen row, with N_CHAINS cores per process
         n_processes = settings.cores // HMCSamplingConfig.N_CHAINS
@@ -89,7 +92,11 @@ def do_mcmc_image(image: NDArray, v_axis: NDArray, settings: Settings) -> NDArra
 
 
 def do_mcmc_line(
-    line_and_id: tuple[NDArray, str], v_axis: NDArray, rms: float, model: CmdStanModel
+    line_and_id: tuple[NDArray, str],
+    v_axis: NDArray,
+    rms: float,
+    model: CmdStanModel,
+    n_dim_params: int,
 ) -> NDArray:
     # Chain ID from first arg. Chain ID is just pixel index ij
     chain_id = line_and_id[1]
@@ -102,7 +109,14 @@ def do_mcmc_line(
     # Get data in form needed to run Stan model (including setting parameter bounds)
     data = format_data(line, v_axis, rms)
     # Choose sensible initialisation for chains based on data
-    initialisation = dict(a=line.max(), b=v_axis[np.argmax(line)], c=1e3)
+    if n_dim_params == 3:
+        initialisation = dict(a=line.max(), b=v_axis[np.argmax(line)], c=1e3)
+    elif n_dim_params == 6:
+        initialisation = dict(
+            a=[line.max(), line.max()],
+            b=[v_axis[np.argmax(line)] - 100, v_axis[np.argmax(line)] + 100],
+            c=[1000, 1000],
+        )
     # Get sampler configuration kwargs from global settings
     kwargs_sampler = HMCSamplingConfig.get_sampler_kwargs()
     # Perform sampling
@@ -121,7 +135,7 @@ def do_mcmc_line(
         # of the Gaussian, the sampler will return a RuntimeError. We interpret this as a lack
         # of a detection in this pixel and simply return zeros in the same format as the summary.
         except RuntimeError:
-            return np.zeros((4, 9))
+            return np.zeros((n_dim_params + 1, 9))
 
 
 def silent_logging_cmdstanpy():
