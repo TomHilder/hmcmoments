@@ -19,6 +19,9 @@ from .image import estimate_rms
 from .models import format_data, get_model, get_number_params
 from .settings import Settings
 
+# Number of statistics in summary arrays (CmdStanPy default in 9, I have added 1)
+N_STATISTICS = 10
+
 
 class HMCSamplingConfig:
     """Keep track of global settings we provide to the CmdStanModel.sample method.
@@ -63,7 +66,7 @@ def do_mcmc_image(image: NDArray, v_axis: NDArray, settings: Settings) -> NDArra
     # Get number of model parameters
     n_dim_params = get_number_params(settings.model)
     # Initialise an array of shape (n_x_pixels, n_y_pixels, n_dim_params+1, n_statistics) to mcmc results
-    summary_statistics = np.zeros((*image.shape[1:], n_dim_params + 1, 9))
+    summary_statistics = np.zeros((*image.shape[1:], n_dim_params + 1, N_STATISTICS))
     # Iterate over the rows of the image sequentially
     for i in tqdm(range(image.shape[1])):
         # Reduce do_mcmc_line to single argument function for pool.map since other arguments are constant for fixed i
@@ -129,13 +132,20 @@ def do_mcmc_line(
                 output_dir=tmpdirname,
                 **kwargs_sampler,
             )
+            # Get summary statistics dataframe
+            summary_stats = fit.summary()
+            # get maximum lp__
+            max_lp__ = np.max(fit.method_variables()["lp__"].flatten())
+            # Add max lp__ to stats
+            summary_stats["max"] = [max_lp__] + [0.0] * (summary_stats.shape[0] - 1)
+            print(summary_stats.shape)
             # Return only the summary statistics from the fit
-            return np.array(fit.summary())
+            return np.array(summary_stats)
         # If the pixel does not contain a peak compatible with the lower bound on the height
         # of the Gaussian, the sampler will return a RuntimeError. We interpret this as a lack
         # of a detection in this pixel and simply return zeros in the same format as the summary.
         except RuntimeError:
-            return np.zeros((n_dim_params + 1, 9))
+            return np.zeros((n_dim_params + 1, N_STATISTICS))
 
 
 def silent_logging_cmdstanpy():
