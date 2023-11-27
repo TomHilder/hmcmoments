@@ -138,7 +138,6 @@ def do_mcmc_line(
             max_lp__ = np.max(fit.method_variables()["lp__"].flatten())
             # Add max lp__ to stats
             summary_stats["max"] = [max_lp__] + [0.0] * (summary_stats.shape[0] - 1)
-            print(summary_stats.shape)
             # Return only the summary statistics from the fit
             return np.array(summary_stats)
         # If the pixel does not contain a peak compatible with the lower bound on the height
