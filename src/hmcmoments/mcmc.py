@@ -16,7 +16,7 @@ from numpy.typing import NDArray
 from tqdm import tqdm
 
 from .image import estimate_rms
-from .models import format_data, get_model
+from .models import format_data, get_model, get_number_params
 from .settings import Settings
 
 
@@ -61,7 +61,7 @@ def do_mcmc_image(image: NDArray, v_axis: NDArray, settings: Settings) -> NDArra
     # An estimate of the rms in the image will be used as the uncertainty
     rms = estimate_rms(image, settings)
     # Get number of model parameters
-    n_dim_params = 3 * settings.model
+    n_dim_params = get_number_params(settings.model)
     # Initialise an array of shape (n_x_pixels, n_y_pixels, n_dim_params+1, n_statistics) to mcmc results
     summary_statistics = np.zeros((*image.shape[1:], n_dim_params + 1, 9))
     # Iterate over the rows of the image sequentially

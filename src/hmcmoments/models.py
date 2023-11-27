@@ -16,6 +16,7 @@ from pkg_resources import resource_filename
 MODEL_NAMES = [
     "gaussian",
     "doublegaussian",
+    "doublegaussianmax",
 ]
 
 
@@ -23,6 +24,7 @@ MODEL_NAMES = [
 STAN_FILES = [
     "stan_models/single_gaussian.stan",
     "stan_models/double_gaussian.stan",
+    "stan_models/double_gaussian_max.stan",
 ]
 
 
@@ -35,6 +37,15 @@ def get_model(model_number: int) -> CmdStanModel:
     stan_file = Path(resource_filename("hmcmoments", STAN_FILES[model_number - 1]))
     # Get model object and compile .stan program if need be
     return CmdStanModel(stan_file=stan_file)
+
+
+def get_number_params(model_number: int) -> int:
+    if model_number == 1:
+        return 3
+    elif model_number in [2, 3]:
+        return 6
+    else:
+        raise KeyError("Invalid model number")
 
 
 # Assemble data into format required by model

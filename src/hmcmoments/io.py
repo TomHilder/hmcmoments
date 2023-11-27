@@ -34,9 +34,9 @@ def get_parser() -> argparse.ArgumentParser:
         "-m",
         "--model",
         type=int,
-        help="fit either a single (1, default) or double component (2) Gaussian profile to each pixel",
+        help="fit either a single Gaussian (1, default), summed two component Gaussian (2) or max two component Gaussian (3) profile to each pixel",
         metavar="n_model",
-        choices=[1, 2],
+        choices=[1, 2, 3],
         default=Settings.DEFAULT_MODEL,
     )
     # Optional argument to downsample cube
