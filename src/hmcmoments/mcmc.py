@@ -30,8 +30,8 @@ class HMCSamplingConfig:
     # Number of chains (which are executed always in parallel)
     N_CHAINS: int = 2
     # Number of iterations
-    N_BURNIN: int = 1000
-    N_PRODUCTION: int = 2000
+    N_BURNIN: int = 2000
+    N_PRODUCTION: int = 8000
     # Tuning sensitivity
     MAX_TREEDEPTH: int = 12
     ADAPT_DELTA: float = 0.99
